@@ -23,7 +23,8 @@ Examples:
 #include <vector>
 #include <cmath>
 
-const char *ENG_BASE_NUMBERS_[] = {
+// Set up our english constants
+const char *ENG_BASE_NUMBERS[] = {
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
 };
 
@@ -36,35 +37,38 @@ const char *ENG_BELOW_HUNDRED[] = {
 };
 
 const char *ENG_BASE_MAGNITUDES[] = {
-    "hundred", "thousand", "million", "billion"
+    "thousand", "million", "billion"
 };
 
+const char *ENG_HUNDRED = "hundred";
 const char *ENG_ZERO = "zero";
 const char *ENG_NEGATIVE = "negative";
+
+void get_hundred(int num, std::vector<const char *> words)
+{
+    if (num >= 100)
+    {
+        int hundred = (int)(num / pow(10, 2));
+        words.push_back(ENG_BASE_NUMBERS[hundred - 1]);
+        words.push_back(ENG_HUNDRED);
+    }
+
+}
 
 std::string int_to_english(signed int num)
 {
     std::string ret;
     std::vector<const char *> words;
-    std::string num_s;
-    char *num_c;
 
-    num_c = (char *)malloc(sizeof(char) * 500);
-    if (!num_c)
-        exit(-1);
-    sprintf(num_c, "%d", abs(num));
-    num_s = std::string(num_c);
-    free(num_c);
-    
     if (num < 0)
         words.push_back(ENG_NEGATIVE);
 
-    for (std::string::iterator it = num_s.begin(); it != num_s.end(); ++it)
-    {
-        std::cout << *it << "\n";
-    }
+    num = abs(num);
+    size_t num_zeros = floor(log10((double)abs(num)));
 
-    for (std::vector<const char *>::iterator it = words.begin(); it != words.end(); ++it)
+    
+
+    for (std::vector<const char *>::iterator it = words.begin(); it < words.end(); ++it)
     {
         ret += *it;
         ret.push_back(' ');
@@ -72,7 +76,7 @@ std::string int_to_english(signed int num)
 
     if (ret.length() > 0)
         ret.pop_back();
-
+    
     ret.shrink_to_fit();
     return ret;
 }
