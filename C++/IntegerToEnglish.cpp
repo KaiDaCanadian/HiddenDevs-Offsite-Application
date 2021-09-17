@@ -125,7 +125,7 @@ void prthelp()
         << "(no args): Opens interactive prompt\n";
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     for (int i = 0; i < argc; ++i)
     {
