@@ -36,31 +36,34 @@ const char *ENG_HUNDRED = "hundred";
 const char *ENG_ZERO = "zero";
 const char *ENG_NEGATIVE = "negative";
 
-void get_hundred(int num, char **words, int *wlen_)
+void wpush(char **words, int *n_words, const char *string)
 {
-    int wlen = *wlen_;
+    words[(*n_words)++] = (char *)string;
+}
+
+void get_hundred(int num, char **words, int *n_words)
+{
     int hundreds = num / 100;
     if (hundreds > 0)
     {
-        words[wlen++] = (char *)ENG_BELOW_TWENTY[hundreds - 1];
-        words[wlen++] = (char *)ENG_HUNDRED;
+        wpush(words, n_words, ENG_BELOW_TWENTY[hundreds - 1]);
+        wpush(words, n_words, ENG_HUNDRED);
     }
 
     num %= 100;
     int tens = num / 10;
     if (tens > 1)
     {
-        words[wlen++] = (char *)ENG_BELOW_HUNDRED[tens - 2];
+        wpush(words, n_words, ENG_BELOW_HUNDRED[tens - 2]);
         num %= 10;
         if (num > 0)
-            words[wlen++] = (char *)ENG_BELOW_TWENTY[num - 1];
+            wpush(words, n_words, ENG_BELOW_TWENTY[num - 1]);
     }
     else
     {
         if (num > 0)
-            words[wlen++] = (char *)ENG_BELOW_TWENTY[num - 1];
+            wpush(words, n_words, ENG_BELOW_TWENTY[num - 1]);
     }
-    *wlen_ = wlen;
 }
 
 const char *int_to_english(signed int num)
@@ -68,42 +71,44 @@ const char *int_to_english(signed int num)
     int magnitude = (int)log10((double)abs(num)) / 3;
     char *ret = (char *)calloc(1000, sizeof(char));
     char **words = (char **)calloc(1 + ((magnitude + 1) * 4), sizeof(char *));
-    int wlen = 0;
+    int n_words = 0;
 
     if (num < 0)
-        words[wlen++] = (char *)ENG_NEGATIVE;
+        wpush(words, &n_words, ENG_NEGATIVE);
 
     if (num != 0)
     {
         num = abs(num);
-        int *mags = (int *)calloc(magnitude + 1, sizeof(int));
-        int mlen = 0;
+        int *magnitudes = (int *)calloc(magnitude + 1, sizeof(int));
+        int n_magnitudes = 0;
 
-        // Get each magnitude (in reverse)
+        // Get each magnitude in reverse
         while (num != 0)
         {
-            mags[mlen++] = num % 1000;
+            magnitudes[n_magnitudes++] = num % 1000;
             num /= 1000;
         }
 
-        for (int i = 0; i < mlen; ++i)
+        // Traverse backwards
+        for (int i = 0; i < n_magnitudes; ++i)
         {
             --magnitude;
-            int j = mlen - 1 - i;
-            get_hundred(mags[j], words, &wlen);
+            int j = n_magnitudes - 1 - i;
+            get_hundred(magnitudes[j], words, &n_words);
 
-            if (mags[j] != 0 && magnitude >= 0)
+            if (magnitudes[j] != 0 && magnitude >= 0)
             {
-                words[wlen++] = (char *)ENG_BASE_MAGNITUDES[magnitude];
+                wpush(words, &n_words, ENG_BASE_MAGNITUDES[magnitude]);
             }
         }
     }
     else
     {
-        words[wlen++] = (char *)ENG_ZERO;
+        wpush(words, &n_words, ENG_ZERO);
     }
 
-    for (int i = 0; i < wlen; ++i)
+    // Compile words list into return string
+    for (int i = 0; i < n_words; ++i)
     {
         strcat(ret, words[i]);
         strcat(ret, " ");
@@ -143,7 +148,7 @@ int main(int argc, char **argv)
                 return -1;
             }
 
-            int n = atoi(argv[i+1]);
+            int n = atoi(argv[i + 1]);
             const char *ret = int_to_english(n);
             printf("%s", ret);
             return 0;
@@ -151,5 +156,6 @@ int main(int argc, char **argv)
     }
 
     prthelp();
+
     return 0;
 }
